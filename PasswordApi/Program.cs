@@ -1,11 +1,16 @@
+using PasswordApi.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureSwaggerGen(setup => {
     setup.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
-        Title = "Weather Forecasts",
+        Title = "User API",
         Version = "v1"
     });
 });
+
+// Add db context
+builder.Services.AddDbContext<UserDbContext>();
 
 // Add services to the container.
 
