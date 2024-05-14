@@ -12,8 +12,8 @@ using PasswordApi.Database;
 namespace PasswordApi.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20240514081243_InitialMigrationAPI")]
-    partial class InitialMigrationAPI
+    [Migration("20240514121013_initialApiDb")]
+    partial class initialApiDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

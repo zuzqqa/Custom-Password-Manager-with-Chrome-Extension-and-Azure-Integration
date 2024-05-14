@@ -3,10 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PasswordApi.Models;
 
+/// <summary>
+/// This class represents a user in the database.
+/// </summary>
 public class UserModel {
+    /// <summary>
+    /// This is the primary key for the user.
+    /// </summary>
     [Key]
     [Required]
-    [MinLength(8), MaxLength(255)]
+    [MinLength(3), MaxLength(255)]
     public string Name { get; set; }
 
     // Backing field for password
@@ -14,6 +20,9 @@ public class UserModel {
     [Required]
     private string _password;
 
+    /// <summary>
+    /// This is the password for the user.
+    /// </summary>
     [Required]
     [MinLength(8), MaxLength(255)]
     public string Password {
