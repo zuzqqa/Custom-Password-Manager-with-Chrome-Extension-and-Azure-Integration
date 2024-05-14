@@ -30,11 +30,11 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// </summary>
     /// <param name="user">Simplified user class which contains username and password only</param>
     /// <returns>Appropriate status code response</returns>
-    /// <response code="200">If everything is correct</response>
+    /// <response code="201">If everything is correct and user was created</response>
     /// <response code="409">If username already exists</response>
     /// <response code="400">If exception is thrown</response>
     /// <response code="500">If there was an error</response>
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError)]
