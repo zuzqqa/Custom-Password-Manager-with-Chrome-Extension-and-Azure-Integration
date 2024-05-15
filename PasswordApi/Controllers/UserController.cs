@@ -46,7 +46,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         try {
             await userDb.Users.AddAsync(user);
             await userDb.SaveChangesAsync();
-            return Ok();
+            return Ok("Ok");
         }
         catch (Exception e) {
             logger.LogError(e.Message, user);
@@ -63,15 +63,18 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// <response code="200">If everything is correct</response>
     /// <response code="404">If user does not exist</response>
     /// <response code="401">If password is incorrect</response>
-    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)] // No content
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound, Type = typeof(void))] // No content
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized, Type = typeof(void))] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound, Type = typeof(void))] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized, Type = typeof(void))] // No content
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserToValidate user) {
         var userInDb = await userDb.Users.FindAsync(user.Name);
-        if (userInDb is null) return NotFound();
-        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) return Ok();
-        return Unauthorized();
+        if (userInDb is null) 
+            return NotFound("Not found");
+        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) 
+            return Ok("Ok");
+
+        return Unauthorized("Unauthorized");
     }
 
     // PUT: /<controller>/update
