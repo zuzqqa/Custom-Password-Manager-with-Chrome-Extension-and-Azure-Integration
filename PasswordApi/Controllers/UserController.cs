@@ -46,7 +46,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         try {
             await userDb.Users.AddAsync(user);
             await userDb.SaveChangesAsync();
-            return Ok("Ok");
+            return StatusCode(StatusCodes.Status201Created);
         }
         catch (Exception e) {
             logger.LogError(e.Message, user);

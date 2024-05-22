@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PasswordApi.Migrations
 {
     /// <inheritdoc />
-    public partial class initialApiDb : Migration
+    public partial class initialcreate11 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
