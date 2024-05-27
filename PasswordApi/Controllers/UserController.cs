@@ -54,6 +54,37 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         }
     }
 
+    // Post: /<controller>/password/save
+    /// <summary>
+    /// Saves a password to the key vault.
+    /// </summary>
+    /// <param name="password">Username and plain password to save</param>
+    /// <returns>Appropriate status code</returns>
+    /// <response code="201">If password was saved</response>
+    /// <response code="500">If there was an error</response>
+    [HttpPost("password/save")]
+    public async Task<IActionResult> SavePassword([FromBody] PasswordModel password) {
+        var user = await userDb.Users.FindAsync(password.Username);
+        if (user is null) 
+            return NotFound();
+
+        // Save password to key vault
+
+        return StatusCode(StatusCodes.Status201Created);
+    }
+
+    // GET: /<controller>/password/get
+    [HttpGet("password/get")]
+    public async Task<IActionResult> GetPassword([FromBody] UserModel loggedUser) {
+        var user = await userDb.Users.FindAsync(loggedUser);
+        if (user is null)
+            return NotFound();
+
+        // Get password from key vault
+        // Return all passwords for the user
+        return Ok();
+    }
+
     // POST: /<controller>/login
     /// <summary>
     /// This method is used to authenticate a user.
