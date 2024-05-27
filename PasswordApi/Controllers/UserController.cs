@@ -30,11 +30,11 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// </summary>
     /// <param name="user">Simplified user class which contains username and password only</param>
     /// <returns>Appropriate status code response</returns>
-    /// <response code="200">If everything is correct</response>
+    /// <response code="201">If everything is correct and user was created</response>
     /// <response code="409">If username already exists</response>
     /// <response code="400">If exception is thrown</response>
     /// <response code="500">If there was an error</response>
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(void), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError)]
@@ -46,12 +46,43 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         try {
             await userDb.Users.AddAsync(user);
             await userDb.SaveChangesAsync();
-            return Ok();
+            return StatusCode(StatusCodes.Status201Created);
         }
         catch (Exception e) {
             logger.LogError(e.Message, user);
             return BadRequest(e.Message);
         }
+    }
+
+    // Post: /<controller>/password/save
+    /// <summary>
+    /// Saves a password to the key vault.
+    /// </summary>
+    /// <param name="password">Username and plain password to save</param>
+    /// <returns>Appropriate status code</returns>
+    /// <response code="201">If password was saved</response>
+    /// <response code="500">If there was an error</response>
+    [HttpPost("password/save")]
+    public async Task<IActionResult> SavePassword([FromBody] PasswordModel password) {
+        var user = await userDb.Users.FindAsync(password.Username);
+        if (user is null) 
+            return NotFound();
+
+        // Save password to key vault
+
+        return StatusCode(StatusCodes.Status201Created);
+    }
+
+    // GET: /<controller>/password/get
+    [HttpGet("password/get")]
+    public async Task<IActionResult> GetPassword([FromBody] UserModel loggedUser) {
+        var user = await userDb.Users.FindAsync(loggedUser);
+        if (user is null)
+            return NotFound();
+
+        // Get password from key vault
+        // Return all passwords for the user
+        return Ok();
     }
 
     // POST: /<controller>/login
@@ -63,14 +94,17 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// <response code="200">If everything is correct</response>
     /// <response code="404">If user does not exist</response>
     /// <response code="401">If password is incorrect</response>
-    [ProducesResponseType(typeof(void), StatusCodes.Status200OK)] // No content
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound, Type = typeof(void))] // No content
-    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized, Type = typeof(void))] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound, Type = typeof(void))] // No content
+    [ProducesResponseType(typeof(string), StatusCodes.Status401Unauthorized, Type = typeof(void))] // No content
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserToValidate user) {
         var userInDb = await userDb.Users.FindAsync(user.Name);
-        if (userInDb is null) return NotFound();
-        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) return Ok();
+        if (userInDb is null) 
+            return NotFound();
+        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) 
+            return Ok();
+
         return Unauthorized();
     }
 
