@@ -5,6 +5,15 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(corsOptions => {
+    corsOptions.AddDefaultPolicy(policyBuilder => {
+        policyBuilder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => {
     options.SwaggerDoc("v1",
@@ -42,7 +51,7 @@ app.UseSwaggerUI(options => {
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseCors();
 
 app.MapControllers();
 
