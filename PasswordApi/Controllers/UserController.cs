@@ -70,11 +70,11 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     public async Task<IActionResult> Login([FromBody] UserToValidate user) {
         var userInDb = await userDb.Users.FindAsync(user.Name);
         if (userInDb is null) 
-            return NotFound("Not found");
+            return NotFound();
         if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) 
-            return Ok("Ok");
+            return Ok();
 
-        return Unauthorized("Unauthorized");
+        return Unauthorized();
     }
 
     // PUT: /<controller>/update
