@@ -110,8 +110,8 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         if (userInDb is null)
             return NotFound();
 
-        if (!BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)) 
-            return Unauthorized();
+        //if (!BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)) 
+        //    return Unauthorized();
 
         // Get password from key vault
         const string keyVaultName = "CyberProjektKV";
