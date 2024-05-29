@@ -72,24 +72,37 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         if (user is null) 
             return NotFound();
 
-        Console.WriteLine($"Saving password for {password.Username} at {password.SiteAddress}.");
+        logger.LogInformation($"Saving password for {password.Username} at {password.SiteAddress}.");
         // Save password to key vault
 
-        var secretName = password.Username + password.SiteAddress.ToUpper();
-        var secretValue = password.PlainPassword;
+        try {
+            var secretName = password.Username + password.SiteAddress.ToUpper();
+            var secretValue = password.PlainPassword;
 
-        var keyVaultName = "CyberProjektKV";
-        var kvUri = $"https://{keyVaultName}.vault.azure.net";
+            const string keyVaultName = "CyberProjektKV";
+            const string kvUri = $"https://{keyVaultName}.vault.azure.net";
 
-        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+            var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
 
-        Console.Write($"Creating a secret in {keyVaultName} called '{secretName}' with the value '{secretValue}' ...");
-        await client.SetSecretAsync(secretName, secretValue);
+            logger.LogInformation(
+                $"Creating a secret in {keyVaultName} called '{secretName}' with the value '{secretValue}' ...");
+            await client.SetSecretAsync(secretName, secretValue);
 
-        return StatusCode(StatusCodes.Status201Created);
+            return StatusCode(StatusCodes.Status201Created);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
     }
 
     // POST: /<controller>/password/get
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="loggedUser"></param>
+    /// <returns></returns>
     [HttpPost("password/get")]
     public async Task<IActionResult> GetPassword([FromBody] UserModel loggedUser) {
         var userInDb = await userDb.Users.FindAsync(loggedUser.Name);
@@ -97,28 +110,27 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         if (userInDb is null)
             return NotFound();
 
-        if (BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)){
-            // Get password from key vault
-            var keyVaultName = "CyberProjektKV";
-            var kvUri = $"https://{keyVaultName}.vault.azure.net";
+        if (!BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)) 
+            return Unauthorized();
 
-            var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
-            var secrets = new List<(string, string)>();
+        // Get password from key vault
+        const string keyVaultName = "CyberProjektKV";
+        const string kvUri = $"https://{keyVaultName}.vault.azure.net";
 
-            await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
-            {
-                if (secretProperties.Name.Contains(loggedUser.Name))
-                {
-                    var secret = await client.GetSecretAsync(secretProperties.Name);
-                    secrets.Add((secret.Value.Name, secret.Value.Value));
-                }
-            }
+        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+        var secrets = new List<(string, string)>();
 
-            // Return all passwords for the user
-            return Ok(secrets);
+        await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync()) {
+            if (!secretProperties.Name.Contains(loggedUser.Name)) 
+                continue;
+            
+            var secret = await client.GetSecretAsync(secretProperties.Name);
+            secrets.Add((secret.Value.Name, secret.Value.Value));
         }
 
-        return Unauthorized();
+        // Return all passwords for the user
+        return Ok(secrets);
+
     }
 
     // POST: /<controller>/login
