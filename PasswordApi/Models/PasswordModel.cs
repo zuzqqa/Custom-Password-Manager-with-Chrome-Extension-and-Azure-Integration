@@ -3,4 +3,5 @@
 public class PasswordModel {
     public string Username { get; set; }
     public string PlainPassword { get; set; }
+    public string SiteAddress { get; set; }
 }

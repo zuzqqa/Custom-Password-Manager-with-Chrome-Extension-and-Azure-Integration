@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PasswordApi.Database;
 using PasswordApi.Models;
+using System;
+using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 namespace PasswordApi.Controllers;
 
@@ -68,21 +72,53 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         if (user is null) 
             return NotFound();
 
+        Console.WriteLine($"Saving password for {password.Username} at {password.SiteAddress}.");
         // Save password to key vault
+
+        var secretName = password.Username + password.SiteAddress.ToUpper();
+        var secretValue = password.PlainPassword;
+
+        var keyVaultName = "CyberProjektKV";
+        var kvUri = $"https://{keyVaultName}.vault.azure.net";
+
+        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+
+        Console.Write($"Creating a secret in {keyVaultName} called '{secretName}' with the value '{secretValue}' ...");
+        await client.SetSecretAsync(secretName, secretValue);
 
         return StatusCode(StatusCodes.Status201Created);
     }
 
-    // GET: /<controller>/password/get
-    [HttpGet("password/get")]
+    // POST: /<controller>/password/get
+    [HttpPost("password/get")]
     public async Task<IActionResult> GetPassword([FromBody] UserModel loggedUser) {
-        var user = await userDb.Users.FindAsync(loggedUser);
-        if (user is null)
+        var userInDb = await userDb.Users.FindAsync(loggedUser.Name);
+
+        if (userInDb is null)
             return NotFound();
 
-        // Get password from key vault
-        // Return all passwords for the user
-        return Ok();
+        if (BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)){
+            // Get password from key vault
+            var keyVaultName = "CyberProjektKV";
+            var kvUri = $"https://{keyVaultName}.vault.azure.net";
+
+            var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+            var secrets = new List<(string, string)>();
+
+            await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
+            {
+                if (secretProperties.Name.Contains(loggedUser.Name))
+                {
+                    var secret = await client.GetSecretAsync(secretProperties.Name);
+                    secrets.Add((secret.Value.Name, secret.Value.Value));
+                }
+            }
+
+            // Return all passwords for the user
+            return Ok(secrets);
+        }
+
+        return Unauthorized();
     }
 
     // POST: /<controller>/login
