@@ -103,7 +103,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// <param name="username"></param>
     /// <returns></returns>
     [HttpPost("password/get")]
-    public async Task<IActionResult> GetPassword([FromBody] StringWrap username) {
+    public async Task<IActionResult> GetPassword([FromBody] UsernameString username) {
         var userInDb = await userDb.Users.FindAsync(username.Username);
         if (userInDb is null)
             return NotFound();
@@ -165,4 +165,6 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     public IActionResult Options() => Ok();
 }
 
-public record StringWrap(string Username);
+public class UsernameString {
+    public required string Username { get; set; }
+}
