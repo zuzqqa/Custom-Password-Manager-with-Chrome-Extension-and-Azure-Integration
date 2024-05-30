@@ -152,12 +152,12 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     public async Task<IActionResult> Login([FromBody] UserToValidate user) {
         var userInDb = await userDb.Users.FindAsync(user.Name);
         if (userInDb is null)
-            return NotFound();
+            return NotFound(userInDb?.Name);
 
         if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password))
-            return Ok();
+            return Ok(userInDb.Name);
 
-        return Unauthorized();
+        return Unauthorized(userInDb.Name);
     }
 
     /// <summary>
