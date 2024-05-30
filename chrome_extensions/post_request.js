@@ -3,8 +3,10 @@ document.getElementById("myForm").addEventListener("submit", function (event) {
   console.log("Form submitted!");
   var formData = new FormData(this);
 
+  console.log(JSON.stringify(Object.fromEntries(formData.entries())));
+
   var xhr = new XMLHttpRequest();
-  xhr.open("POST", "http://localhost:3000", true);
+  xhr.open("POST", "https://cyberapi.azurewebsites.net/user/login", true);
   xhr.setRequestHeader("Content-Type", "application/json");
   xhr.onload = function () {
     console.log(xhr.responseText);

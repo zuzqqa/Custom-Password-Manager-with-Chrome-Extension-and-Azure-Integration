@@ -159,4 +159,11 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
 
         return Unauthorized();
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [HttpOptions]
+    public IActionResult Options() => Ok();
 }
