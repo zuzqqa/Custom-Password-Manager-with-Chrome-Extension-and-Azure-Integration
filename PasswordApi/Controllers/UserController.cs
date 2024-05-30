@@ -103,8 +103,8 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// <param name="username"></param>
     /// <returns></returns>
     [HttpPost("password/get")]
-    public async Task<IActionResult> GetPassword([FromBody] string username) {
-        var userInDb = await userDb.Users.FindAsync(username);
+    public async Task<IActionResult> GetPassword([FromBody] StringWrap username) {
+        var userInDb = await userDb.Users.FindAsync(username.Username);
         if (userInDb is null)
             return NotFound();
 
@@ -116,7 +116,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         Dictionary<string, string> secrets = [];
 
         await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync()) {
-            if (!secretProperties.Name.StartsWith(username))
+            if (!secretProperties.Name.StartsWith(username.Username))
                 continue;
 
             var secret = await client.GetSecretAsync(secretProperties.Name);
@@ -164,3 +164,5 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     [HttpOptions]
     public IActionResult Options() => Ok();
 }
+
+public record StringWrap(string Username);
