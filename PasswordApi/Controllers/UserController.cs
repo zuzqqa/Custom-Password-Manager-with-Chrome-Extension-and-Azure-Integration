@@ -100,16 +100,13 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="loggedUser"></param>
+    /// <param name="username"></param>
     /// <returns></returns>
     [HttpPost("password/get")]
-    public async Task<IActionResult> GetPassword([FromBody] UserToValidate loggedUser) {
-        var userInDb = await userDb.Users.FindAsync(loggedUser.Name);
+    public async Task<IActionResult> GetPassword([FromBody] string username) {
+        var userInDb = await userDb.Users.FindAsync(username);
         if (userInDb is null)
             return NotFound();
-
-        if (!BCrypt.Net.BCrypt.Verify(loggedUser.Password, userInDb.Password))
-            return Unauthorized();
 
         // Get password from key vault
         const string keyVaultName = "CyberProjektKV";
@@ -119,7 +116,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
         Dictionary<string, string> secrets = [];
 
         await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync()) {
-            if (!secretProperties.Name.StartsWith(loggedUser.Name))
+            if (!secretProperties.Name.StartsWith(username))
                 continue;
 
             var secret = await client.GetSecretAsync(secretProperties.Name);
@@ -155,10 +152,7 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
             return NotFound(userInDb?.Name);
 
         if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password))
-            return Ok(new {
-                username = userInDb.Name,
-                password = userInDb.Password,
-            });
+            return Ok(userInDb.Name);
 
         return Unauthorized(userInDb.Name);
     }
