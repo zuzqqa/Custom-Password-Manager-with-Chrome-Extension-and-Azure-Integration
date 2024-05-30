@@ -155,7 +155,10 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
             return NotFound(userInDb?.Name);
 
         if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password))
-            return Ok(userInDb.Name);
+            return Ok(new {
+                username = userInDb.Name,
+                password = userInDb.Password,
+            });
 
         return Unauthorized(userInDb.Name);
     }
