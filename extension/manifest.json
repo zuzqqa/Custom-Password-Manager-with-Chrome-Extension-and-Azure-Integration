@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Password Manager",
+  "version": "0.4",
+  "description": "Password Manager extension",
+  "permissions": ["tabs"],
+  "action": {
+    "default_popup": "views/login_view.html",
+    "default_icon": "images/key.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/post_login.js",
+        "scripts/get_cookies.js",
+        "scripts/set_cookies.js",
+        "scripts/get_cookies.js",
+        "scripts/post_register.js",
+        "scripts/add_password.js",
+        "scripts/main_view.js",
+        "scripts/change_password.js",
+        "scripts/redirecting_views.js",
+        "scripts/get_passwords.js",
+        "views/main_view.html",
+        "views/change_password_view.html",
+        "views/add_password_view.html",
+        "images/previous.png",
+        "images/plus.png",
+        "images/exit.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

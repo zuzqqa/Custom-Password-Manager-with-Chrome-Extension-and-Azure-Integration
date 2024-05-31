@@ -69,56 +69,68 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     [HttpPost("password/save")]
     public async Task<IActionResult> SavePassword([FromBody] PasswordModel password) {
         var user = await userDb.Users.FindAsync(password.Username);
-        if (user is null) 
+        if (user is null)
             return NotFound();
 
-        Console.WriteLine($"Saving password for {password.Username} at {password.SiteAddress}.");
+        logger.LogInformation($"Saving password for {password.Username} at {password.SiteAddress}.");
         // Save password to key vault
 
-        var secretName = password.Username + password.SiteAddress.ToUpper();
-        var secretValue = password.PlainPassword;
+        try {
+            var secretName = $"{password.Username}{password.SiteAddress}";
+            var secretValue = password.PlainPassword;
 
-        var keyVaultName = "CyberProjektKV";
-        var kvUri = $"https://{keyVaultName}.vault.azure.net";
+            const string keyVaultName = "CyberProjektKV";
+            const string kvUri = $"https://{keyVaultName}.vault.azure.net";
 
-        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+            var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
 
-        Console.Write($"Creating a secret in {keyVaultName} called '{secretName}' with the value '{secretValue}' ...");
-        await client.SetSecretAsync(secretName, secretValue);
+            logger.LogInformation(
+                $"Creating a secret in {keyVaultName} called '{secretName}' with the value '{secretValue}' ...");
+            await client.SetSecretAsync(secretName, secretValue);
 
-        return StatusCode(StatusCodes.Status201Created);
+            return StatusCode(StatusCodes.Status201Created);
+        }
+        catch (Exception e) {
+            logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
     }
 
     // POST: /<controller>/password/get
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="username"></param>
+    /// <returns></returns>
     [HttpPost("password/get")]
-    public async Task<IActionResult> GetPassword([FromBody] UserModel loggedUser) {
-        var userInDb = await userDb.Users.FindAsync(loggedUser.Name);
-
+    public async Task<IActionResult> GetPassword([FromBody] UsernameString username) {
+        var userInDb = await userDb.Users.FindAsync(username.Username);
         if (userInDb is null)
             return NotFound();
 
-        if (BCrypt.Net.BCrypt.Verify(userInDb.Password, loggedUser.Password)){
-            // Get password from key vault
-            var keyVaultName = "CyberProjektKV";
-            var kvUri = $"https://{keyVaultName}.vault.azure.net";
+        // Get password from key vault
+        const string keyVaultName = "CyberProjektKV";
+        const string kvUri = $"https://{keyVaultName}.vault.azure.net";
 
-            var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
-            var secrets = new List<(string, string)>();
+        var client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+        Dictionary<string, string> secrets = [];
 
-            await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync())
-            {
-                if (secretProperties.Name.Contains(loggedUser.Name))
-                {
-                    var secret = await client.GetSecretAsync(secretProperties.Name);
-                    secrets.Add((secret.Value.Name, secret.Value.Value));
-                }
-            }
+        await foreach (var secretProperties in client.GetPropertiesOfSecretsAsync()) {
+            if (!secretProperties.Name.StartsWith(username.Username))
+                continue;
 
-            // Return all passwords for the user
-            return Ok(secrets);
+            var secret = await client.GetSecretAsync(secretProperties.Name);
+            var secretName = secret.Value.Name;
+
+            var index = secretName.IndexOf(userInDb.Name, StringComparison.Ordinal);
+            if (index != -1)
+                secretName = secretName.Remove(index, userInDb.Name.Length);
+
+            secrets.Add(secretName, secret.Value.Value);
         }
 
-        return Unauthorized();
+        // Return all passwords for the user
+        return Ok(secrets);
     }
 
     // POST: /<controller>/login
@@ -136,54 +148,23 @@ public class UserController(ILogger<UserController> logger, UserDbContext userDb
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserToValidate user) {
         var userInDb = await userDb.Users.FindAsync(user.Name);
-        if (userInDb is null) 
-            return NotFound();
-        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password)) 
-            return Ok();
+        if (userInDb is null)
+            return NotFound(userInDb?.Name);
 
-        return Unauthorized();
+        if (BCrypt.Net.BCrypt.Verify(user.Password, userInDb.Password))
+            return Ok(userInDb.Name);
+
+        return Unauthorized(userInDb.Name);
     }
 
-    // PUT: /<controller>/update
     /// <summary>
-    /// This method is used to update a user's password.
+    /// 
     /// </summary>
-    /// <param name="user">User instance to be updated</param>
-    /// <returns>Appropriate status code response</returns>
-    /// <response code="200">If everything is correct</response>
-    /// <response code="404">If user does not exist</response>
-    /// <response code="500">If there was an error</response>
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError)]
-    [HttpPut("update")]
-    public async Task<IActionResult> Put([FromBody] UserModel user) {
-        var userInDb = await userDb.Users.FindAsync(user.Name);
-        if (userInDb is null) return NotFound();
-        userInDb.Password = user.Password;
-        userInDb.UpdatedAt = DateTime.Now;
-        await userDb.SaveChangesAsync();
-        return Ok();
-    }
+    /// <returns></returns>
+    [HttpOptions]
+    public IActionResult Options() => Ok();
+}
 
-    // DELETE: /<controller>/delete
-    /// <summary>
-    /// This method is used to delete a user.
-    /// </summary>
-    /// <param name="user">User instance to be deleted</param>
-    /// <returns>Appropriate status code response</returns>
-    /// <response code="200">If everything is correct</response>
-    /// <response code="404">If user does not exist</response>
-    /// <response code="500">If there was an error</response>
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(void), StatusCodes.Status500InternalServerError)]
-    [HttpDelete("delete")]
-    public async Task<IActionResult> Delete([FromBody] UserModel user) {
-        var userInDb = await userDb.Users.FindAsync(user.Name);
-        if (userInDb is null) return NotFound();
-        userDb.Users.Remove(userInDb);
-        await userDb.SaveChangesAsync();
-        return Ok();
-    }
+public class UsernameString {
+    public required string Username { get; set; }
 }
