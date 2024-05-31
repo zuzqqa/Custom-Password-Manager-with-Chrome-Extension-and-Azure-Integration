@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Manager</title>
+  </head>
+  <html>
+    <body>
+      <h1>Password Manager</h1>
+    </body>
+
+    <form id="form">
+      <label>Login:</label><br />
+      <input required type="text" id="name" name="name" for="name" /><br />
+      <label>Password:</label><br />
+      <input required type="password" id="password" name="password" for="password" />
+      <button type="button" id="loginBtn">Login</button>
+      <button type="button" id="registerBtn">Register</button>
+    </form>
+    <div id="response"></div>
+    <script src="/scripts/redirecting_views.js"></script>
+    <script src="/scripts/get_passwords.js"></script>
+    <script src="../scripts/post_reqister.js"></script>
+    <script src="../scripts/post_login.js"></script>
+
+    <button type="button" id="changePasswordBtn">Change password</button>
+
+    <script src="../scripts/set_cookies.js"></script>
+  </html>
+</html>
