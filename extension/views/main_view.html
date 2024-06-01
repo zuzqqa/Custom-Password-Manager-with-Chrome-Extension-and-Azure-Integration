@@ -1,34 +1,36 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Extension</title>
-  </head>
-  <body>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
     <h1>Login successful!</h1>
-    <img src="/images/plus.png" alt="add" id="addBtn" width="50" height="50" />
-    <img
-      src="/images/checked.png"
-      alt="submit"
-      id="submitBtn"
-      width="50"
-      height="50"
-    />
-    <img
-      src="/images/exit.png"
-      alt="add"
-      id="logoutBtn"
-      width="50"
-      height="50"
-    />
+    <div class="icon-container">
+        <div class="icon-item">
+            <img src="/images/plus.png" alt="add" id="addBtn" width="50" height="50" />
+            <span class="icon-label">Add</span>
+        </div>
+        <!-- <div class="icon-item">
+            <img src="/images/checked.png" alt="save" id="submitBtn" width="50" height="50" />
+            <span class="icon-label">Save</span>
+        </div> -->
+        <div class="icon-item">
+            <img src="/images/exit.png" alt="log out" id="logoutBtn" width="50" height="50" />
+            <span class="icon-label">Log Out</span>
+        </div>
+    </div>
     <h4>Your passwords:</h4>
     <div id="content"></div>
     <script src="../scripts/redirecting_views.js"></script>
     <script src="../scripts/main_view.js"></script>
     <script src="../scripts/get_passwords.js"></script>
     <script>
-      window.onload = function () {
-        console.log("Main view loaded");
-      };
+        window.onload = function () {
+            console.log("Main view loaded");
+        };
     </script>
-  </body>
+</body>
 </html>

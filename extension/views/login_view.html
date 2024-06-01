@@ -4,28 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Password Manager</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <html>
-    <body>
-      <h1>Password Manager</h1>
-    </body>
+  <body>
+    <h1>Password Manager</h1>
 
     <form id="form">
-      <label>Login:</label><br />
-      <input required type="text" id="name" name="name" for="name" /><br />
-      <label>Password:</label><br />
-      <input required type="password" id="password" name="password" for="password" />
-      <button type="button" id="loginBtn">Login</button>
-      <button type="button" id="registerBtn">Register</button>
+      <div class="form-group">
+        <label for="name">Login:</label>
+        <input required type="text" id="name" name="name" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input required type="password" id="password" name="password" />
+      </div>
+      <div class="form-buttons">
+        <button type="button" id="loginBtn">Login</button>
+        <button type="button" id="registerBtn">Register</button>
+      </div>
     </form>
+
     <div id="response"></div>
+
+    <button type="button" id="changePasswordBtn">Change Password</button>
+
     <script src="/scripts/redirecting_views.js"></script>
     <script src="/scripts/get_passwords.js"></script>
-    <script src="../scripts/post_reqister.js"></script>
+    <script src="../scripts/post_register.js"></script>
     <script src="../scripts/post_login.js"></script>
-
-    <button type="button" id="changePasswordBtn">Change password</button>
-
     <script src="../scripts/set_cookies.js"></script>
-  </html>
+  </body>
 </html>
