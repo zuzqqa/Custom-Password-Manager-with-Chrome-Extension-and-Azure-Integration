@@ -17,7 +17,7 @@ function sendRegistrationRequest(jsonData) {
     },
   })
     .then(handleResponse)
-    .catch(handleError);
+    .catch(handleErrorRegister);
 }
 
 function handleResponse(response) {
@@ -50,7 +50,11 @@ function displayErrorMessageRegister(message) {
 
 document
   .getElementById("registerBtn")
-  .addEventListener("click", handleRegistration);
+  .addEventListener("click", function(event) {
+    handleRegistration(event);
+    let form = document.getElementById("form");
+    form.reset();
+  });
 
 window.onload = function () {
   var sessionToken = localStorage.getItem("sessionToken");

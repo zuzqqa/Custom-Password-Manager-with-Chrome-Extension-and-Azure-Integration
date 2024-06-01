@@ -1,9 +1,8 @@
 function handleGetPassword(event) {
-  //event.preventDefault();
   console.log("Get passwords form submitted!");
 
   var json = JSON.stringify({
-    username: sessionStorage.getItem("user")
+    username: localStorage.getItem("user")
   });
 
   console.log(json);
@@ -23,37 +22,50 @@ function sendGetPasswordRequest(jsonData) {
 }
 
 async function handleResponseGetPassword(response) {
-  //console.log(response);
   if (response.status === 200) {
     const data = await response.json();
     let hashtable = new Map(Object.entries(data));
-    console.log(hashtable);
 
     for (let [siteAddress, plainPassword] of hashtable) {
-      console.log(siteAddress + " = " + plainPassword);
-      document.getElementById("content").innerHTML +=
-        "<p>" + siteAddress + " = " + plainPassword + "</p>";
-    }
+      let contentDiv = document.getElementById("content");
+      
+      let existingElements = Array.from(contentDiv.getElementsByTagName('p'));
+      if (existingElements.some(p => p.textContent.includes(siteAddress))) {
+          continue;
+      }
 
-    // response.json().then((data) => {
-    //   redirectToView("views/main_view.html").then(() => {
-    //     const content = document.getElementById("content");
+      let p = document.createElement('p');
+      let span = document.createElement('span');
+      let button = document.createElement('button');
+      let passwordInput = document.createElement('input');
+  
+      span.textContent = siteAddress;
+      span.style.fontSize = '16px'; 
+      passwordInput.value = plainPassword;
+      passwordInput.type = 'password';
+      passwordInput.style.borderRadius = '5px';
+      passwordInput.style.backgroundColor = 'white';
+      passwordInput.style.color = 'black';
+      passwordInput.style.marginTop = '10px';
+      passwordInput.style.marginBottom = '10px';passwordInput.style.paddingLeft = '5px';
+      passwordInput.style.paddingRight = '5px';
 
-    //     data.forEach((item) => {
-    //       const siteAddressElement = document.createElement("p");
-    //       siteAddressElement.textContent = item.siteAddress;
-    //       content.appendChild(siteAddressElement);
-
-    //       const usernameElement = document.createElement("p");
-    //       usernameElement.textContent = item.username;
-    //       content.appendChild(usernameElement);
-
-    //       const passwordElement = document.createElement("p");
-    //       passwordElement.textContent = item.password;
-    //       content.appendChild(passwordElement);
-    //     });
-    //   });
-    // });
+      button.textContent = 'Show password';
+  
+      button.onclick = function() {
+          if (passwordInput.type === 'password') {
+              passwordInput.type = 'text';
+          } else {
+              passwordInput.type = 'password';
+          }
+      };
+  
+      p.appendChild(span);
+      p.appendChild(passwordInput);
+      p.appendChild(button);
+  
+      contentDiv.appendChild(p);
+  }
   } else {
     console.error("Response status is not 200 OK");
     throw new Error("Response status is not 200 OK");

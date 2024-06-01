@@ -23,7 +23,7 @@ function sendLoginRequest(jsonData) {
 async function handleResponseLogin(response) {
   if (response.status === 200) {
     const user = await response.text();
-    sessionStorage.setItem("user", user);
+    localStorage.setItem("user", user);
     localStorage.setItem("sessionToken", response.token);
     redirectToView("views/main_view.html");
   } else if (response.status === 401) {

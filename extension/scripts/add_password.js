@@ -3,7 +3,15 @@ function handleAddPassword(event) {
   console.log("Form submitted!");
 
   var formData = new FormData(document.getElementById("form"));
-  var jsonData = JSON.stringify(Object.fromEntries(formData.entries()));
+  var formEntries = Object.fromEntries(formData.entries());
+
+  var selectedData = {
+    siteAddress: formEntries.siteAddress,
+    plainPassword: formEntries.plainPassword,
+    username: localStorage.getItem('user') 
+  };
+
+  var jsonData = JSON.stringify(selectedData);
 
   sendAddPasswordRequest(jsonData);
 }
